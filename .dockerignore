@@ -1,0 +1,7 @@
+node_modules
+.pnpm-store
+apps/*/node_modules
+apps/*/dist
+apps/backend/src/generated/prisma
+.git
+.DS_Store

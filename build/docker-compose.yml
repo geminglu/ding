@@ -1,0 +1,46 @@
+name: ding-server
+services:
+  mysql:
+    image: mysql:8.2
+    container_name: ding-mysql
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: ding
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ding_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - ding-network
+
+  backend:
+    image: ding-backend:latest
+    build:
+      context: ..
+      dockerfile: build/Dockerfile.backend
+    container_name: ding-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - ./.env.docker
+    ports:
+      - "3000:3000"
+    networks:
+      - ding-network
+
+volumes:
+  ding_mysql_data:
+
+networks:
+  ding-network:
+    driver: bridge
