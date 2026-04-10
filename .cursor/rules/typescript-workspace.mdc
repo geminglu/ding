@@ -1,0 +1,32 @@
+---
+description: 工作区 TypeScript 通用规范
+globs: apps/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript 通用规范
+
+- 优先保持目标应用已有风格，不要把 `backend`、`app`、`weapp` 的写法互相混用
+- 避免 `any`，优先使用明确类型、泛型或 `unknown`
+- 导出的类型、DTO、接口返回值应显式命名，避免匿名复杂类型直接暴露
+- 工具函数优先写成小而稳定的纯函数；副作用逻辑放到应用层组件、service 或 module 中
+- 新增依赖使用 `pnpm add` 或 `pnpm add -D`，并提交 `pnpm-lock.yaml`
+- 仅在边界条件、兼容性处理、非直观转换处添加中文注释，注释解释“为什么”
+
+## 示例
+
+```typescript
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+```
+
+```typescript
+const formatSeconds = (totalSeconds: number) => {
+  const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};
+```

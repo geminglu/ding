@@ -1,0 +1,26 @@
+---
+description: Taro 小程序页面与服务规则
+globs: apps/weapp/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Weapp Taro 规则
+
+- `apps/weapp` 是 Taro React 小程序，页面放在 `src/pages`，接口和平台能力封装放在 `src/services`、`src/utils`
+- 页面组件优先使用函数组件 + hooks，页面初始化、副作用和分享逻辑集中在页面顶部组织
+- 与微信/Taro 平台交互时统一通过 `Taro.*` API，失败提示、复制、授权等流程保持显式处理
+- 网络请求优先复用 service 层方法，不在页面里直接拼接重复请求逻辑
+- 页面样式使用同名 `.less` 文件，结构类名保持页面前缀一致，如 `page__card`、`share-page__button`
+- 需要分享、登录、订阅通知等平台行为时，优先保留可降级和失败提示路径
+
+## 示例
+
+```typescript
+const requestData = async <T>(path: string, method: "GET" | "POST") => {
+  const response = await Taro.request<ApiResponse<T>>({
+    url: `${API_BASE_URL}${path}`,
+    method,
+  });
+  return response.data.data;
+};
+```

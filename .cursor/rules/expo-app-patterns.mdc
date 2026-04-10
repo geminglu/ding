@@ -1,0 +1,26 @@
+---
+description: Expo App Router 应用规则
+globs: apps/app/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Expo App 规则
+
+- `apps/app` 是 Expo + React Native + `expo-router` 应用，页面优先放在 `app/`，通用组件放在 `components/`
+- 路由文件默认导出页面组件，导航结构放在 `_layout.tsx`，不要把页面逻辑塞进 layout
+- 优先复用 `ThemedText`、`ThemedView`、`useColorScheme`、`useThemeColor` 等现有封装
+- 样式使用 `StyleSheet.create`，颜色和主题优先走现有 theme/hook，不直接散落硬编码
+- 交互代码要兼顾移动端语义，如 `Pressable`、`accessibilityRole`、禁用态和按压态
+- 新组件先写清职责，复杂状态再抽 hook；简单页面可以保留在单文件内
+
+## 示例
+
+```tsx
+export default function HomeScreen() {
+  return (
+    <ThemedView style={styles.container}>
+      <ThemedText type="title">简单计时器</ThemedText>
+    </ThemedView>
+  );
+}
+```

@@ -1,0 +1,32 @@
+---
+description: Nest 后端模块和接口规则
+globs: apps/backend/src/**/*.ts
+alwaysApply: false
+---
+
+# Backend Nest 规则
+
+- `apps/backend` 是 NestJS 服务端，按 `controller / service / dto / module` 组织，不要把 HTTP 细节写进数据层
+- 控制器负责路由、参数装饰器和返回包装；业务逻辑放到 service
+- 接口入参优先使用 DTO，并结合 `class-validator` 和 `@nestjs/swagger` 注解
+- 统一复用现有返回结构、过滤器、装饰器和守卫模式，如 `ResultData`、`Public`
+- service 内优先组合 `PrismaService`、配置服务和领域 service，异常使用 Nest 内置异常类
+- 新增模块时保持 `src/modules/<name>/` 目录结构一致，并补齐 module/provider/export 关系
+
+## 示例
+
+```typescript
+@Controller({ path: "notify", version: "1" })
+export class NotifyController {
+  constructor(private readonly notifyService: NotifyService) {}
+}
+```
+
+```typescript
+export class RegisterOrLoginDto {
+  @ApiProperty({ description: "Taro.login 获取的临时 code" })
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+}
+```

@@ -1,0 +1,20 @@
+---
+description: Git 提交信息规范
+alwaysApply: true
+---
+
+# Git 提交规范
+
+- 使用 Conventional Commits 格式：`type(scope): summary`
+- `type` 仅使用：`feat`、`fix`、`refactor`、`docs`、`test`、`chore`、`style`、`perf`
+- `scope` 优先使用当前工作区模块名，如 `app`、`backend`、`weapp`、`prisma`、`workspace`
+- `summary` 聚焦结果或目的，避免 `update code`、`fix bug` 这类空泛描述
+- `summary` 可用中文或英文，但应尽量与当前模块最近提交语言保持一致
+- 一次提交跨多个应用时，优先描述最核心的用户价值或架构变化
+
+## 示例
+
+- `feat(app): 添加首页计时器界面`
+- `fix(backend): 修复通知发送接口的无效 key 校验`
+- `refactor(weapp): 抽离通知接口请求方法`
+- `chore(prisma): 更新通知 key 模型索引`

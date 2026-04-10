@@ -1,0 +1,29 @@
+---
+description: Backend Prisma schema 与客户端规则
+globs: apps/backend/prisma/**/*.prisma,apps/backend/prisma.config.ts,apps/backend/src/prisma/**/*.ts
+alwaysApply: false
+---
+
+# Backend Prisma 规则
+
+- 当前后端使用 Prisma + MariaDB/MySQL，修改 schema、迁移和 `PrismaService` 时一起考虑
+- model 命名使用单数 PascalCase；字段名使用 camelCase；时间字段优先保留 `createdAt`、`updatedAt`
+- 关系两端都要显式定义；常查字段补充 `@unique`、`@@index` 或组合索引
+- 调整 schema 前先确认是否需要数据保留、回滚方案和迁移命名，不要直接做高风险破坏性修改
+- 在 Nest 中统一通过 `PrismaService` 访问数据库，不在业务代码里重复创建 `PrismaClient`
+- 修改数据库连接或 adapter 行为时，保证现有 `prisma.config.ts` 与 `src/prisma/prisma.service.ts` 配置一致
+
+## 示例
+
+```prisma
+model NotifyKey {
+  id        String          @id @default(cuid())
+  userId    String
+  key       String          @unique
+  status    NotifyKeyStatus @default(ACTIVE)
+  createdAt DateTime        @default(now())
+  user      WeappUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+```
