@@ -1,10 +1,13 @@
 import { Logger, Module } from "@nestjs/common";
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
 import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import config from "./config";
+import { BillingModule } from "./modules/billing/billing.module";
+import { MobileModule } from "./modules/mobile/mobile.module";
 import { NotifyModule } from "./modules/notify/notify.module";
+import { PushModule } from "./modules/push/push.module";
 import { WeappModule } from "./modules/weapp/weapp.module";
 import { WechatModule } from "./modules/wechat/wechat.module";
 import { PrismaModule } from "./prisma/prisma.module";
@@ -19,6 +22,9 @@ import { PrismaModule } from "./prisma/prisma.module";
     ScheduleModule.forRoot(),
     PrismaModule,
     WechatModule,
+    PushModule,
+    BillingModule,
+    MobileModule,
     WeappModule,
     NotifyModule,
   ],

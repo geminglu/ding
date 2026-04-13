@@ -10,6 +10,13 @@ export interface ConfigType {
   port: number;
   databaseUrl: string;
   publicApiBaseUrl: string;
+  mobileTrialDays: number;
+  mobileAppScheme: string;
+  expoPushApiUrl: string;
+  iosMonthlyProductId: string;
+  iosYearlyProductId: string;
+  androidMonthlyProductId: string;
+  androidYearlyProductId: string;
   /** 微信小程序 appid */
   wechatAppId: string;
   /** 微信小程序 appsecret */
@@ -33,6 +40,17 @@ export default registerAs(
       process.env.DATABASE_URL ?? "mysql://root:123456@127.0.0.1:3306/ding",
     publicApiBaseUrl:
       process.env.PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3000",
+    mobileTrialDays: getNumber(process.env.MOBILE_TRIAL_DAYS, 7),
+    mobileAppScheme: process.env.MOBILE_APP_SCHEME ?? "ding",
+    expoPushApiUrl:
+      process.env.EXPO_PUSH_API_URL ?? "https://exp.host/--/api/v2/push/send",
+    iosMonthlyProductId:
+      process.env.IOS_MONTHLY_PRODUCT_ID ?? "ding_monthly_ios",
+    iosYearlyProductId: process.env.IOS_YEARLY_PRODUCT_ID ?? "ding_yearly_ios",
+    androidMonthlyProductId:
+      process.env.ANDROID_MONTHLY_PRODUCT_ID ?? "ding_monthly_android",
+    androidYearlyProductId:
+      process.env.ANDROID_YEARLY_PRODUCT_ID ?? "ding_yearly_android",
     wechatAppId: process.env.WECHAT_APP_ID ?? "FAKE_WECHAT_APP_ID",
     wechatAppSecret: process.env.WECHAT_APP_SECRET ?? "FAKE_WECHAT_APP_SECRET",
     wechatTemplateId: process.env.WECHAT_TEMPLATE_ID ?? "FAKE_TEMPLATE_ID",

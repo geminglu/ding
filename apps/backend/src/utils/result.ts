@@ -1,18 +1,18 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 export class ResultData {
   constructor(success = true, message?: string, data?: any) {
-    this.message = message || '';
+    this.message = message || "";
     this.data = data ?? null;
     this.success = success;
   }
 
-  @ApiProperty({ type: 'string', default: '' })
+  @ApiProperty({ type: "string", default: "" })
   message?: string;
 
   @ApiProperty()
   data?: any;
 
-  @ApiProperty({ type: 'boolean' })
+  @ApiProperty({ type: "boolean" })
   success: boolean;
 
   /**

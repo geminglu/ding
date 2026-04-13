@@ -1,18 +1,18 @@
-import { Type, applyDecorators } from '@nestjs/common';
+import { Type, applyDecorators } from "@nestjs/common";
 import {
-  ApiOkResponse,
-  getSchemaPath,
-  ApiInternalServerErrorResponse,
   ApiCreatedResponse,
-  ApiUnauthorizedResponse,
+  ApiInternalServerErrorResponse,
+  ApiOkResponse,
   ApiResponse,
-} from '@nestjs/swagger';
+  ApiUnauthorizedResponse,
+  getSchemaPath,
+} from "@nestjs/swagger";
 import {
-  SchemaObject,
   ReferenceObject,
-} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+  SchemaObject,
+} from "@nestjs/swagger/dist/interfaces/open-api-spec.interface";
 
-const baseTypeNames = ['String', 'Number', 'Boolean'];
+const baseTypeNames = ["String", "Number", "Boolean"];
 /**
  * 封装 swagger 返回统一结构
  * 支持复杂类型 {  status, message, data }
@@ -37,28 +37,28 @@ export const SuccessResponse = <TModel extends Type<any>>(
   let prop: SchemaObject & Partial<ReferenceObject> = null;
   if (isArray && isPager) {
     prop = {
-      type: 'object',
+      type: "object",
       properties: {
         list: {
-          type: 'array',
+          type: "array",
           items,
         },
         total: {
-          type: 'number',
+          type: "number",
           default: 0,
         },
       },
-      required: ['list', 'total'],
+      required: ["list", "total"],
     };
   } else if (isArray) {
     prop = {
-      type: 'array',
+      type: "array",
       items,
     };
   } else if (model) {
     prop = items;
   } else {
-    prop = { type: 'null', default: null };
+    prop = { type: "null", default: null };
   }
 
   return applyDecorators(
@@ -66,19 +66,19 @@ export const SuccessResponse = <TModel extends Type<any>>(
       schema: {
         allOf: [
           {
-            type: 'object',
+            type: "object",
             properties: {
               data: prop,
               message: {
-                type: 'string',
-                default: '',
+                type: "string",
+                default: "",
               },
               success: {
-                type: 'boolean',
+                type: "boolean",
                 default: true,
               },
             },
-            required: ['success'],
+            required: ["success"],
           },
         ],
       },
@@ -120,22 +120,22 @@ export const ResCerated = <TModel extends Type<any>>(
 export const ResServerErrorResponse = () => {
   return applyDecorators(
     ApiInternalServerErrorResponse({
-      description: '服务器错误',
+      description: "服务器错误",
       schema: {
         allOf: [
           {
-            type: 'object',
+            type: "object",
             properties: {
               message: {
-                type: 'string',
-                default: 'server error',
+                type: "string",
+                default: "server error",
               },
               success: {
-                type: 'boolean',
+                type: "boolean",
                 default: false,
               },
             },
-            required: ['success', 'message'],
+            required: ["success", "message"],
           },
         ],
       },
@@ -146,21 +146,21 @@ export const ResServerErrorResponse = () => {
 export const ResUnauthorized = () => {
   return applyDecorators(
     ApiUnauthorizedResponse({
-      description: '未认证',
+      description: "未认证",
       schema: {
         allOf: [
           {
             properties: {
               message: {
-                type: 'string',
-                default: '请先登陆',
+                type: "string",
+                default: "请先登陆",
               },
               success: {
-                type: 'boolean',
+                type: "boolean",
                 default: false,
               },
             },
-            required: ['success', 'message'],
+            required: ["success", "message"],
           },
         ],
       },
@@ -174,9 +174,9 @@ export const ResUnauthorized = () => {
 export const ResStream = () => {
   return ApiResponse({
     status: 200,
-    description: '成功下载文件',
+    description: "成功下载文件",
     content: {
-      'application/octet-stream': {},
+      "application/octet-stream": {},
     },
   });
 };

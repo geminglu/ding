@@ -6,6 +6,7 @@ datasource db {
   provider = "mysql"
 }
 
+/// 微信小程序原有用户表，继续保留以兼容现有 weapp 通知链路。
 model WeappUser {
   id         String      @id @default(cuid())
   openid     String      @unique
@@ -14,6 +15,7 @@ model WeappUser {
   updatedAt  DateTime    @updatedAt
 }
 
+/// 微信小程序原有的通知 key，和新的 App 通知体系并行存在。
 model NotifyKey {
   id        String          @id @default(cuid())
   userId    String
@@ -31,4 +33,186 @@ model NotifyKey {
 enum NotifyKeyStatus {
   ACTIVE
   ROTATED
+}
+
+/// App 端匿名账号主表。
+/// 这个模型对应上面的产品文档：首次启动自动创建匿名用户、生成唯一 key、开启 7 天试用。
+model AppUser {
+  id                   String               @id @default(cuid())
+  /// 对外暴露给 WebHook 调用方的唯一通知 key。
+  notifyKey            String               @unique
+  /// 用于“重装 / 换机后恢复试用或账号”的恢复码。
+  restoreCode          String               @unique
+  /// 记录当前 key 的状态，便于未来扩展更细的 key 生命周期管理。
+  notifyKeyStatus      AppNotifyKeyStatus   @default(ACTIVE)
+  notifyKeyRotatedAt   DateTime?
+  /// 试用起止时间，决定“首次启动即送 7 天试用”的业务规则。
+  trialStartedAt       DateTime
+  trialEndsAt          DateTime
+  /// 当前权益状态：试用中、已订阅、已过期、宽限期。
+  entitlementStatus    AppEntitlementStatus @default(TRIALING)
+  entitlementExpiresAt DateTime?
+  /// 当前有效套餐，仅在订阅生效时有值。
+  currentPlan          AppPlan?
+  /// 当前有效订阅来源平台，便于换机恢复和订单状态展示。
+  platformSource       AppStorePlatform?
+  lastRestoreAt        DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  installations        AppInstallation[]
+  orders               SubscriptionOrder[]
+  deliveryLogs         NotifyDeliveryLog[]
+  restoreEvents        RestoreEvent[]
+
+  @@index([entitlementStatus])
+  @@index([trialEndsAt])
+}
+
+/// App 安装实例表。
+/// 一个匿名账号可以绑定多个安装实例，用来支持多设备、重装恢复和推送 token 管理。
+model AppInstallation {
+  id             String           @id @default(cuid())
+  appUserId      String
+  /// 设备本地生成并持久化的 installationId，是 App 识别“当前安装实例”的核心主键。
+  installationId String           @unique
+  platform       AppPlatform
+  deviceName     String?
+  appVersion     String?
+  /// 当前设备对应的 Expo Push Token，为空表示当前设备尚未完成远程推送注册。
+  pushToken      String?
+  pushProvider   PushProvider     @default(EXPO)
+  lastActiveAt   DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  appUser        AppUser          @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  deliveryLogs   NotifyDeliveryLog[]
+
+  @@index([appUserId])
+  @@index([platform])
+}
+
+/// 订阅订单表。
+/// 用于承接 Apple IAP / Google Play Billing / RevenueCat 同步后的结果。
+model SubscriptionOrder {
+  id                    String           @id @default(cuid())
+  appUserId             String
+  platform              AppStorePlatform
+  /// 商店侧商品 ID，对应月付 / 年付。
+  productId             String
+  providerCustomerId    String?
+  storeTransactionId    String?
+  originalTransactionId String?
+  /// 订单状态与套餐信息共同决定当前账号是否具备有效权益。
+  status                AppOrderStatus
+  plan                  AppPlan
+  purchasedAt           DateTime?
+  expiresAt             DateTime?
+  isSandbox             Boolean          @default(false)
+  rawPayload            Json?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  appUser               AppUser          @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+
+  @@unique([appUserId, platform, productId])
+  @@index([appUserId, status])
+  @@index([platform, productId])
+}
+
+/// 推送投递日志。
+/// 按产品文档约束，这里只保存技术投递记录，不保存完整通知历史正文。
+model NotifyDeliveryLog {
+  id                String           @id @default(cuid())
+  appUserId         String
+  installationId    String?
+  /// 用于把一次外部 notify 请求和多台设备的投递结果串联起来。
+  requestId         String
+  providerMessageId String?
+  status            DeliveryStatus
+  createdAt         DateTime         @default(now())
+  appUser           AppUser          @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+  installation      AppInstallation? @relation(fields: [installationId], references: [id], onDelete: SetNull)
+
+  @@index([appUserId, createdAt])
+  @@index([requestId])
+}
+
+/// 恢复事件日志。
+/// 用于记录恢复码恢复、商店恢复购买等关键动作，方便排错和后续审计。
+model RestoreEvent {
+  id             String        @id @default(cuid())
+  appUserId      String
+  installationId String?
+  type           RestoreType
+  platform       AppPlatform
+  result         RestoreResult
+  createdAt      DateTime      @default(now())
+  appUser        AppUser       @relation(fields: [appUserId], references: [id], onDelete: Cascade)
+
+  @@index([appUserId, createdAt])
+}
+
+/// App 通知 key 当前状态。
+enum AppNotifyKeyStatus {
+  ACTIVE
+  ROTATED
+}
+
+/// App 权益状态。
+/// 这一组状态直接映射到“试用中 / 已订阅 / 已过期 / 宽限期”的产品展示。
+enum AppEntitlementStatus {
+  TRIALING
+  ACTIVE
+  EXPIRED
+  GRACE_PERIOD
+}
+
+/// 当前支持的订阅套餐。
+enum AppPlan {
+  MONTHLY
+  YEARLY
+}
+
+/// 安装实例所属平台。
+enum AppPlatform {
+  IOS
+  ANDROID
+  UNKNOWN
+}
+
+/// 商店订单来源平台。
+enum AppStorePlatform {
+  IOS
+  ANDROID
+}
+
+/// 商店订单状态。
+enum AppOrderStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+  RESTORED
+  PENDING
+}
+
+/// 当前推送服务商，先固定为 Expo，后续若切 APNs/FCM 可继续扩展。
+enum PushProvider {
+  EXPO
+}
+
+/// 单次投递结果状态。
+enum DeliveryStatus {
+  SENT
+  FAILED
+}
+
+/// 恢复来源类型。
+enum RestoreType {
+  RESTORE_CODE
+  STORE_RESTORE
+}
+
+/// 恢复动作执行结果。
+enum RestoreResult {
+  SUCCESS
+  FAILED
 }
