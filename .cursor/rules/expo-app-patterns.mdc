@@ -1,26 +1,51 @@
 ---
 description: Expo App Router 应用规则
-globs: apps/app/**/*.{ts,tsx}
+globs: apps/app/**/*
 alwaysApply: false
 ---
 
-# Expo App 规则
+You are an expert in JavaScript, React Native, Expo, and Mobile UI development.
 
-- `apps/app` 是 Expo + React Native + `expo-router` 应用，页面优先放在 `app/`，通用组件放在 `components/`
-- 路由文件默认导出页面组件，导航结构放在 `_layout.tsx`，不要把页面逻辑塞进 layout
-- 优先复用 `ThemedText`、`ThemedView`、`useColorScheme`、`useThemeColor` 等现有封装
-- 样式使用 `StyleSheet.create`，颜色和主题优先走现有 theme/hook，不直接散落硬编码
-- 交互代码要兼顾移动端语义，如 `Pressable`、`accessibilityRole`、禁用态和按压态
-- 新组件先写清职责，复杂状态再抽 hook；简单页面可以保留在单文件内
+  Code Style and Structure:
 
-## 示例
+- Write Clean, Readable Code: Ensure your code is easy to read and understand. Use descriptive names for variables and functions.
+- Use Functional Components: Prefer functional components with hooks (useState, useEffect, etc.) over class components.
+- Component Modularity: Break down components into smaller, reusable pieces. Keep components focused on a single responsibility.
+- Organize Files by Feature: Group related components, hooks, and styles into feature-based directories (e.g., user-profile, chat-screen).
 
-```tsx
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <ThemedText type="title">简单计时器</ThemedText>
-    </ThemedView>
-  );
-}
-```
+  Naming Conventions:
+
+- Variables and Functions: Use camelCase for variables and functions (e.g., isFetchingData, handleUserInput).
+- Components: Use PascalCase for component names (e.g., UserProfile, ChatScreen).
+- Directories: Use lowercase and hyphenated names for directories (e.g., user-profile, chat-screen).
+
+  JavaScript Usage:
+
+- Avoid Global Variables: Minimize the use of global variables to prevent unintended side effects.
+- Use ES6+ Features: Leverage ES6+ features like arrow functions, destructuring, and template literals to write concise code.
+
+  Performance Optimization:
+
+- Optimize State Management: Avoid unnecessary state updates and use local state only when needed.
+- Memoization: Use React.memo() for functional components to prevent unnecessary re-renders.
+- FlatList Optimization: Optimize FlatList with props like removeClippedSubviews, maxToRenderPerBatch, and windowSize.
+- Avoid Anonymous Functions: Refrain from using anonymous functions in renderItem or event handlers to prevent re-renders.
+
+  UI and Styling:
+
+- Consistent Styling: Use StyleSheet.create() for consistent styling or Styled Components for dynamic styles.
+- Responsive Design: Ensure your design adapts to various screen sizes and orientations. Consider using responsive units and libraries like react-native-responsive-screen.
+- Optimize Image Handling: Use optimized image libraries like react-native-fast-image to handle images efficiently.
+
+  Best Practices:
+
+- Follow React Native's Threading Model: Be aware of how React Native handles threading to ensure smooth UI performance.
+- Use Expo Tools: Utilize Expo's EAS Build and Updates for continuous deployment and Over-The-Air (OTA) updates.
+- Expo Router: Use Expo Router for file-based routing in your React Native app. It provides native navigation, deep linking, and works across Android, iOS, and web. Refer to the official documentation for setup and usage: <https://docs.expo.dev/router/introduction/>
+
+- `apps/app` is an Expo + React Native + `expo-router` application. Pages are placed in `app/`, and common components are placed in `components/`.
+- By default, route files export page components, and the navigation structure is placed in `_layout.tsx`. Do not cram page logic into the layout.
+- Prioritize reusing existing encapsulations such as `ThemedText`, `ThemedView`, `useColorScheme`, `useThemeColor`, etc.
+- Styles use `StyleSheet.create`, and colors and themes prefer to use existing themes/hooks. Do not directly use hard-coded values.
+- The interaction code should take into account the semantics of mobile devices, such as `Pressable`, `accessibilityRole`, disabled state and pressed state.
+- New components should first clearly define their responsibilities, and complex states should be extracted into hooks; simple pages can remain in a single file.
