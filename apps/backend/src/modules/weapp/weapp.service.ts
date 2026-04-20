@@ -112,6 +112,14 @@ export class WeappService {
     return this.buildProfile(user.id, user.openid, nextKey);
   }
 
+  async generateOpenLink(input: {
+    path: string;
+    query: string;
+    envVersion: "release" | "trial" | "develop";
+  }) {
+    return this.wechatService.generateOpenLink(input);
+  }
+
   private buildProfile(userId: string, openid: string, key: string) {
     const baseUrl = this.configService
       .getOrThrow<string>("config.publicApiBaseUrl")

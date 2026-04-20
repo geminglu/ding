@@ -28,11 +28,29 @@ interface SubscribeMessageResponse {
   msgid?: string;
 }
 
+interface GenerateUrlLinkResponse {
+  url_link?: string;
+  errcode?: number;
+  errmsg?: string;
+}
+
+interface GenerateSchemeResponse {
+  openlink?: string;
+  errcode?: number;
+  errmsg?: string;
+}
+
 interface SendSubscribeMessageInput {
   openid: string;
   title: string;
   content: string;
   page: string;
+}
+
+interface GenerateOpenLinkInput {
+  path: string;
+  query: string;
+  envVersion: "release" | "trial" | "develop";
 }
 
 @Injectable()
@@ -124,6 +142,34 @@ export class WechatService {
     );
   }
 
+  /**
+   * 生成微信小程序 URL Link 和 Scheme。
+   */
+  async generateOpenLink(input: GenerateOpenLinkInput) {
+    const accessToken = await this.getAccessToken();
+    const [urlLink, scheme] = await Promise.all([
+      this.generateUrlLink({
+        accessToken,
+        path: input.path,
+        query: input.query,
+        envVersion: input.envVersion,
+      }),
+      this.generateScheme({
+        accessToken,
+        path: input.path,
+        query: input.query,
+        envVersion: input.envVersion,
+      }),
+    ]);
+    return {
+      path: input.path,
+      query: input.query,
+      envVersion: input.envVersion,
+      urlLink,
+      scheme,
+    };
+  }
+
   private async getAccessToken() {
     const now = Date.now();
     if (this.cachedAccessToken && this.cachedAccessToken.expiresAt > now) {
@@ -157,5 +203,63 @@ export class WechatService {
     };
 
     return this.cachedAccessToken.value;
+  }
+
+  /**
+   * 生成微信小程序 URL Link
+   * [生成 URL Link - 官方文档](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/url-link/urllink.generate)
+   */
+  private async generateUrlLink(input: {
+    accessToken: string;
+    path: string;
+    query: string;
+    envVersion: "release" | "trial" | "develop";
+  }) {
+    const { data } = await axios.post<GenerateUrlLinkResponse>(
+      `https://api.weixin.qq.com/wxa/generate_urllink?access_token=${input.accessToken}`,
+      {
+        path: input.path,
+        query: input.query,
+        env_version: input.envVersion,
+      },
+    );
+    if (data.errcode || !data.url_link) {
+      throw new ServiceUnavailableException(
+        data.errmsg
+          ? `生成微信 URL Link 失败: ${data.errmsg}`
+          : "生成微信 URL Link 失败",
+      );
+    }
+    return data.url_link;
+  }
+
+  /**
+   * 生成微信小程序 Scheme
+   * [生成 Scheme - 官方文档](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/url-scheme.html)
+   */
+  private async generateScheme(input: {
+    accessToken: string;
+    path: string;
+    query: string;
+    envVersion: "release" | "trial" | "develop";
+  }) {
+    const { data } = await axios.post<GenerateSchemeResponse>(
+      `https://api.weixin.qq.com/wxa/generatescheme?access_token=${input.accessToken}`,
+      {
+        jump_wxa: {
+          path: input.path,
+          query: input.query,
+          env_version: input.envVersion,
+        },
+      },
+    );
+    if (data.errcode || !data.openlink) {
+      throw new ServiceUnavailableException(
+        data.errmsg
+          ? `生成微信 Scheme 失败: ${data.errmsg}`
+          : "生成微信 Scheme 失败",
+      );
+    }
+    return data.openlink;
   }
 }
