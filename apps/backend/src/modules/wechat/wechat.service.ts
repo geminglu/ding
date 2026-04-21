@@ -40,6 +40,25 @@ interface GenerateSchemeResponse {
   errmsg?: string;
 }
 
+interface GenerateSunCodeInput {
+  page: string;
+  scene: string;
+  envVersion: "release" | "trial" | "develop";
+  width: number;
+  checkPath: boolean;
+}
+
+interface GenerateSunCodeResult {
+  contentType: string;
+  imageBase64: string;
+  dataUrl: string;
+}
+
+interface WechatErrorResponse {
+  errcode?: number;
+  errmsg?: string;
+}
+
 interface SendSubscribeMessageInput {
   openid: string;
   title: string;
@@ -170,6 +189,52 @@ export class WechatService {
     };
   }
 
+  /**
+   * 生成微信小程序太阳码。
+   * 该接口用于获取小程序码，适用于需要的码数量极多的业务场景。通过该接口生成的小程序码，永久有效，数量暂无限制。 更多用法详见 [获取小程序码](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/qr-code.html)
+   * [生成小程序码 - 官方文档](https://developers.weixin.qq.com/miniprogram/dev/server/API/qrcode-link/qr-code/api_getunlimitedqrcode.html)
+   */
+  async generateSunCode(
+    input: GenerateSunCodeInput,
+  ): Promise<GenerateSunCodeResult> {
+    const accessToken = await this.getAccessToken();
+    const response = await axios.post<ArrayBuffer>(
+      `https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=${accessToken}`,
+      {
+        page: input.page,
+        scene: input.scene,
+        env_version: input.envVersion,
+        width: input.width,
+        check_path: input.checkPath,
+      },
+      {
+        responseType: "arraybuffer",
+      },
+    );
+    const responseHeaders = response.headers as Record<string, unknown>;
+    const rawContentType = responseHeaders["content-type"];
+    const contentType = this.extractContentType(
+      typeof rawContentType === "string" ? rawContentType : undefined,
+    );
+
+    if (contentType.includes("application/json")) {
+      const errorText = Buffer.from(response.data).toString("utf8");
+      const errorData = JSON.parse(errorText) as WechatErrorResponse;
+      throw new ServiceUnavailableException(
+        errorData.errmsg
+          ? `生成微信太阳码失败: ${errorData.errmsg}`
+          : "生成微信太阳码失败",
+      );
+    }
+
+    const imageBase64 = Buffer.from(response.data).toString("base64");
+    return {
+      contentType,
+      imageBase64,
+      dataUrl: `data:${contentType};base64,${imageBase64}`,
+    };
+  }
+
   private async getAccessToken() {
     const now = Date.now();
     if (this.cachedAccessToken && this.cachedAccessToken.expiresAt > now) {
@@ -207,7 +272,7 @@ export class WechatService {
 
   /**
    * 生成微信小程序 URL Link
-   * [生成 URL Link - 官方文档](https://developers.weixin.qq.com/miniprogram/dev/api-backend/open-api/url-link/urllink.generate)
+   * [生成 URL Link - 官方文档](https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/url-link.html)
    */
   private async generateUrlLink(input: {
     accessToken: string;
@@ -261,5 +326,9 @@ export class WechatService {
       );
     }
     return data.openlink;
+  }
+
+  private extractContentType(contentType?: string): string {
+    return contentType?.split(";")[0]?.trim() || "image/jpeg";
   }
 }

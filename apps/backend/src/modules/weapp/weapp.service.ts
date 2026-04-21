@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NotifyKeyStatus } from "@prisma/client";
 import { randomBytes } from "node:crypto";
@@ -118,6 +115,20 @@ export class WeappService {
     envVersion: "release" | "trial" | "develop";
   }) {
     return this.wechatService.generateOpenLink(input);
+  }
+
+  async generateSunCode(input: {
+    page: string;
+    scene: string;
+    envVersion: "release" | "trial" | "develop";
+    width: number;
+    checkPath: boolean;
+  }): Promise<{
+    contentType: string;
+    imageBase64: string;
+    dataUrl: string;
+  }> {
+    return this.wechatService.generateSunCode(input);
   }
 
   private buildProfile(userId: string, openid: string, key: string) {

@@ -61,3 +61,11 @@ export class GenerateOpenLinkDto {
   @IsIn(["release", "trial", "develop"])
   envVersion: "release" | "trial" | "develop" = "release";
 }
+
+export class GenerateOpenLinkResponseDto {
+  @ApiProperty({ description: "小程序打开链接" })
+  urlLink: string;
+
+  @ApiProperty({ description: "小程序 Scheme" })
+  scheme: string;
+}
