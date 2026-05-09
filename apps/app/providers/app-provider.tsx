@@ -42,7 +42,6 @@ const isExpoGo = () => {
 };
 
 const loadNotificationsModule = async () => {
-  console.log('isExpoGo()', isExpoGo());
 
   if (Platform.OS === "web" || isExpoGo()) {
     return null;
@@ -79,8 +78,6 @@ const useAppHook = () => {
       });
 
       setProfile(nextProfile);
-
-      console.log('nextProfile.installationId', nextProfile.installationId);
 
       try {
         await registerPushToken(nextProfile.installationId);
@@ -387,8 +384,6 @@ const persistNotification = async (
 async function registerPushToken(installationId: string) {
   const Notifications = await loadNotificationsModule();
 
-  console.log('Notifications', Notifications);
-
   if (!Notifications) {
     return;
   }
@@ -409,10 +404,7 @@ async function registerPushToken(installationId: string) {
     return;
   }
 
-  const projectId =
-    Constants.easConfig?.projectId ??
-    Constants.expoConfig?.extra?.eas?.projectId ??
-    process.env.EXPO_PUBLIC_EAS_PROJECT_ID;
+  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
 
   if (!projectId) {
     return;

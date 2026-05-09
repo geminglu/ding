@@ -28,36 +28,44 @@ const parseEmail = (value: string | undefined, fallback: string) => {
  * - 后端 API 地址
  */
 export const appConfig = {
-  apiBaseUrl: parseUrl(process.env.EXPO_PUBLIC_API_BASE_URL, 'http://127.0.0.1:3000'),
+  apiBaseUrl: parseUrl(
+    process.env.EXPO_PUBLIC_API_BASE_URL,
+    "http://127.0.0.1:3000",
+  ),
   tutorialUrl: parseUrl(
     process.env.EXPO_PUBLIC_TUTORIAL_URL,
-    'https://example.com/tutorial',
+    "https://example.com/tutorial",
   ),
   privacyUrl: parseUrl(
     process.env.EXPO_PUBLIC_PRIVACY_URL,
-    'https://example.com/privacy',
+    "https://example.com/privacy",
   ),
-  termsUrl: parseUrl(process.env.EXPO_PUBLIC_TERMS_URL, 'https://example.com/terms'),
+  termsUrl: parseUrl(
+    process.env.EXPO_PUBLIC_TERMS_URL,
+    "https://example.com/terms",
+  ),
   feedbackUrl: parseUrl(
     process.env.EXPO_PUBLIC_FEEDBACK_URL,
-    'https://example.com/feedback',
+    "https://example.com/feedback",
   ),
   supportEmail: parseEmail(
     process.env.EXPO_PUBLIC_SUPPORT_EMAIL,
-    'support@example.com',
+    "support@example.com",
   ),
-  iosRevenueCatApiKey: process.env.EXPO_PUBLIC_IOS_REVENUECAT_API_KEY ?? '',
-  androidRevenueCatApiKey: process.env.EXPO_PUBLIC_ANDROID_REVENUECAT_API_KEY ?? '',
-  revenueCatEntitlementId: process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? '',
+  iosRevenueCatApiKey: process.env.EXPO_PUBLIC_IOS_REVENUECAT_API_KEY ?? "",
+  androidRevenueCatApiKey:
+    process.env.EXPO_PUBLIC_ANDROID_REVENUECAT_API_KEY ?? "",
+  revenueCatEntitlementId:
+    process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? "",
   iosMonthlyProductId:
-    process.env.EXPO_PUBLIC_IOS_MONTHLY_PRODUCT_ID ?? 'ding_monthly_ios',
+    process.env.EXPO_PUBLIC_IOS_MONTHLY_PRODUCT_ID ?? "ding_monthly_ios",
   iosYearlyProductId:
-    process.env.EXPO_PUBLIC_IOS_YEARLY_PRODUCT_ID ?? 'ding_yearly_ios',
+    process.env.EXPO_PUBLIC_IOS_YEARLY_PRODUCT_ID ?? "ding_yearly_ios",
   androidMonthlyProductId:
-    process.env.EXPO_PUBLIC_ANDROID_MONTHLY_PRODUCT_ID ?? 'ding_monthly_android',
+    process.env.EXPO_PUBLIC_ANDROID_MONTHLY_PRODUCT_ID ??
+    "ding_monthly_android",
   androidYearlyProductId:
-    process.env.EXPO_PUBLIC_ANDROID_YEARLY_PRODUCT_ID ?? 'ding_yearly_android',
-  easProjectId: process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? '',
+    process.env.EXPO_PUBLIC_ANDROID_YEARLY_PRODUCT_ID ?? "ding_yearly_android",
 };
 
 /**
@@ -66,14 +74,14 @@ export const appConfig = {
  * 这样订阅页只需要关心“月付 / 年付”，
  * 不需要在页面层反复判断 iOS 和 Android 的商品差异。
  */
-export const getProductIdForPlan = (plan: 'MONTHLY' | 'YEARLY') => {
-  if (Platform.OS === 'ios') {
-    return plan === 'MONTHLY'
+export const getProductIdForPlan = (plan: "MONTHLY" | "YEARLY") => {
+  if (Platform.OS === "ios") {
+    return plan === "MONTHLY"
       ? appConfig.iosMonthlyProductId
       : appConfig.iosYearlyProductId;
   }
 
-  return plan === 'MONTHLY'
+  return plan === "MONTHLY"
     ? appConfig.androidMonthlyProductId
     : appConfig.androidYearlyProductId;
 };
@@ -86,11 +94,11 @@ export const getProductIdForPlan = (plan: 'MONTHLY' | 'YEARLY') => {
  * - Android 看 Android RevenueCat key 是否存在
  */
 export const isBillingConfigured = () => {
-  if (Platform.OS === 'ios') {
+  if (Platform.OS === "ios") {
     return Boolean(appConfig.iosRevenueCatApiKey);
   }
 
-  if (Platform.OS === 'android') {
+  if (Platform.OS === "android") {
     return Boolean(appConfig.androidRevenueCatApiKey);
   }
 
